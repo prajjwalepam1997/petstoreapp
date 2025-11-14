@@ -3,7 +3,7 @@ name: CI/CD to Azure Container Registry
 env:
   AZURE_CONTAINER_REGISTRY: petstoreapp640514.azurecr.io
   AZURE_CONTAINER_REGISTRY_USERNAME: petstoreapp640514
-  IMAGE_NAME: webapp
+  IMAGE_NAME: petstoreapp
 
 on:
   push:
