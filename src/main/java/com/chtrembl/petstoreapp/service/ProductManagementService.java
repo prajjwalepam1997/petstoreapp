@@ -1,5 +1,6 @@
 package com.chtrembl.petstoreapp.service;
 
+import com.microsoft.applicationinsights.telemetry.MetricTelemetry;
 import com.chtrembl.petstoreapp.client.ProductServiceClient;
 import com.chtrembl.petstoreapp.exception.ProductServiceException;
 import com.chtrembl.petstoreapp.model.ContainerEnvironment;
@@ -13,6 +14,7 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 import static com.chtrembl.petstoreapp.config.Constants.CATEGORY;
@@ -43,10 +45,16 @@ public class ProductManagementService {
                 requestId, traceId, category);
 
         try {
+            // Custom event with user/session details
+            HashMap<String, String> eventProperties = new HashMap<>(this.sessionUser.getCustomEventProperties());
+            eventProperties.put("UserName", this.sessionUser.getName());
+            eventProperties.put("SessionId", this.sessionUser.getSessionId());
+
             this.sessionUser.getTelemetryClient().trackEvent(
-                    String.format("PetStoreApp user %s is requesting to retrieve products from the ProductService",
-                            this.sessionUser.getName()),
-                    this.sessionUser.getCustomEventProperties(), null);
+                    "ProductsByCategoryRequest",
+                    eventProperties,
+                    null
+            );
 
             products = productServiceClient.getProductsByStatus(AVAILABLE.getValue());
             this.sessionUser.setProducts(products);
@@ -63,8 +71,16 @@ public class ProductManagementService {
                         .toList();
             }
 
+            int productCount = products.size();
+
+            // Custom metric with dimensions
+            MetricTelemetry metric = new MetricTelemetry("ProductsReturnedCount", productCount);
+            metric.getProperties().putAll(eventProperties);
+            metric.getProperties().put("Category", category);
+            this.sessionUser.getTelemetryClient().track(metric);  // Correct method
+
             log.info("Successfully retrieved {} products for category {} with tags {} [RequestID: {}, TraceID: {}]",
-                    products.size(), category, tags, requestId, traceId);
+                    productCount, category, tags, requestId, traceId);
 
             return products;
         } catch (FeignException fe) {
