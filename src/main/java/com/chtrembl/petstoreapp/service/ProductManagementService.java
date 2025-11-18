@@ -74,10 +74,7 @@ public class ProductManagementService {
             int productCount = products.size();
 
             // Custom metric with dimensions
-            MetricTelemetry metric = new MetricTelemetry("ProductsReturnedCount", productCount);
-            metric.getProperties().putAll(eventProperties);
-            metric.getProperties().put("Category", category);
-            this.sessionUser.getTelemetryClient().track(metric);  // Correct method
+            this.sessionUser.getTelemetryClient().trackMetric("ProductsReturnedCount", productCount);
 
             log.info("Successfully retrieved {} products for category {} with tags {} [RequestID: {}, TraceID: {}]",
                     productCount, category, tags, requestId, traceId);
