@@ -32,7 +32,7 @@ public class ProductManagementService {
     private final ContainerEnvironment containerEnvironment;
     private final ProductServiceClient productServiceClient;
 
-    public Collection<Product> getProductsByCategory(String category, List<Tag> tags) {
+    public Collection<Product> getProductsByCategory(String category, List<Tag> tags) throws Exception {
         List<Product> products;
 
         MDC.put(OPERATION, "getProducts");
@@ -97,6 +97,7 @@ public class ProductManagementService {
         } finally {
             MDC.remove(OPERATION);
             MDC.remove(CATEGORY);
+            throw new Exception("Newly introduced exception");
         }
     }
 }
