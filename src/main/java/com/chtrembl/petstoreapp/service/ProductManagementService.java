@@ -97,7 +97,6 @@ public class ProductManagementService {
         } finally {
             MDC.remove(OPERATION);
             MDC.remove(CATEGORY);
-            throw new Exception("Newly introduced exception");
         }
     }
 }
